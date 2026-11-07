@@ -1,0 +1,25 @@
+/* 帧比特网页版 · 补充样式（沿用 Mac 版的颜色变量） */
+html, body { height: 100%; }
+#app { height: 100%; }
+
+.web-dialog { width: min(520px, calc(100vw - 32px)); }
+.web-dialog form { display: flex; flex-direction: column; gap: 14px; padding: 18px 20px 16px; }
+.web-lead { margin: 0; font-size: 13px; line-height: 1.7; }
+.web-status { display: flex; flex-direction: column; border: 1px solid var(--line2); border-radius: 10px; }
+.web-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 12px; font-size: 13px; }
+.web-row + .web-row { border-top: 1px solid var(--line); }
+.web-row > span:last-child { display: inline-flex; align-items: center; gap: 7px; flex: none; font-size: 12px; color: var(--muted); }
+.web-row i { width: 7px; height: 7px; background: var(--faint); clip-path: var(--pxc); }
+.web-row .ok { color: var(--text); }
+.web-row .ok i { background: #3DD68C; }
+.set-sec .web-status { margin: 4px 0 12px; max-width: 520px; }
+.web-notes { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; line-height: 1.7; color: var(--muted); }
+
+/* 窄屏：帧比特是桌面工作台，先提示，可以选择继续 */
+.web-narrow { display: none; }
+@media (max-width: 760px) {
+  .web-narrow { position: fixed; inset: 0; z-index: 2000; display: grid; place-items: center; padding: 24px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px)); background: var(--bg); color: var(--text); }
+  .web-narrow-card { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; max-width: 360px; }
+  .web-narrow-card b { font-size: 18px; }
+  .web-narrow-card p { margin: 0; font-size: 14px; line-height: 1.7; color: var(--muted); }
+}

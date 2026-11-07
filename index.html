@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="帧比特 FRAMEBIT：从选题到交付的 AI 短视频编导工作台">
+  <title>帧比特 FRAMEBIT 预览版</title>
+  <link rel="preload" href="fusion-pixel-12px.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="framebit.css">
+  <link rel="stylesheet" href="framebit-35.css">
+  <link rel="stylesheet" href="framebit-36.css">
+  <link rel="stylesheet" href="framebit-37.css">
+  <link rel="stylesheet" href="framebit-web.css">
+</head>
+<body>
+  <div id="boot" class="boot" aria-hidden="true"></div>
+
+  <div id="app">
+    <div id="conflict" class="conflict" role="alert">
+      <span id="conflictText">另一个窗口保存了更新的数据，这个窗口已暂停保存。</span>
+      <button class="btn sm" id="conflictReload" type="button">载入最新数据</button>
+      <button class="btn sm" id="conflictForce" type="button">保留本窗口内容</button>
+    </div>
+    <div id="view"></div>
+  </div>
+  <div id="cover" hidden></div>
+
+  <dialog id="apiDialog" class="modal" aria-labelledby="apiTitle">
+    <form method="dialog" id="apiForm">
+      <div class="modal-head"><h2 class="px" id="apiTitle">连接模型平台</h2><button class="btn quiet sm" value="cancel" aria-label="关闭">关闭</button></div>
+      <p class="dim" style="font-size:13px;margin:0">文本、图片、视频可以分别连接不同平台，连接新平台不会断开已有的。</p>
+      <div class="prov-tabs" id="provTabs" role="tablist" aria-label="选择平台"></div>
+      <input type="hidden" id="providerInput" value="openai">
+      <div id="provRegion" class="region-row" hidden><span class="px faint">接入地址</span><div class="seg" id="regionSeg"></div><input type="hidden" id="regionInput" value="global"></div>
+      <div id="provHint" class="hint"></div>
+      <label class="field"><span id="apiKeyLabel">API Key</span><input id="apiKey" type="password" autocomplete="off" placeholder="粘贴平台生成的 API Key"></label>
+      <label class="check"><input type="checkbox" id="rememberKeys"><span>在这台 Mac 上记住密钥（保存在本机数据目录，仅当前用户可读）</span></label>
+      <div id="apiMessage" class="form-msg" role="alert"></div>
+      <div class="modal-actions"><button id="disconnectApi" type="button" class="btn line sm left">断开这个平台</button><button value="cancel" class="btn line">取消</button><button id="saveApi" type="submit" value="default" class="btn primary">保存并连接</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="rewriteDialog" class="modal" aria-labelledby="rwTitle">
+    <form method="dialog" id="rwForm">
+      <div class="modal-head"><h2 class="px" id="rwTitle">局部重写</h2><button class="btn quiet sm" value="cancel" aria-label="关闭">关闭</button></div>
+      <label class="field"><span>原文</span><textarea id="rwOriginal" rows="4" readonly></textarea></label>
+      <label class="field"><span>修改要求</span><textarea id="rwInstr" rows="3" placeholder="例如：更口语，控制在 45 字以内"></textarea></label>
+      <div class="quick">
+        <button type="button" data-rw="更口语、更自然，删掉书面表达">更口语</button>
+        <button type="button" data-rw="压缩到原文的 60%，保留核心观点">更精炼</button>
+        <button type="button" data-rw="增强前三秒钩子，但不要夸张或绝对化">强钩子</button>
+        <button type="button" data-rw="降低风险，增加必要限定词">降风险</button>
+      </div>
+      <div class="modal-actions"><button value="cancel" class="btn line">取消</button><button id="rwRun" type="submit" value="default" class="btn primary">让 AI 重写</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="versionsDialog" class="modal" aria-labelledby="verTitle">
+    <form method="dialog">
+      <div class="modal-head"><h2 class="px" id="verTitle">版本</h2><button class="btn quiet sm" value="cancel" aria-label="关闭">关闭</button></div>
+      <div id="versionsBody"></div>
+    </form>
+  </dialog>
+
+  <dialog id="webDialog" class="modal web-dialog" aria-labelledby="webTitle">
+    <form method="dialog">
+      <div class="modal-head"><h2 class="px" id="webTitle">帧比特预览版</h2><button class="btn quiet sm" value="cancel" aria-label="关闭">关闭</button></div>
+      <p class="dim web-lead">这是帧比特的临时预览，界面、编导流程、画布、IP 工作台、Bit 都和 Mac 版一样，打开就能用，不需要登录。</p>
+      <div id="webStatus" class="web-status"></div>
+      <ul class="web-notes">
+        <li>预览版没有接入模型：AI 写作、AI 编导，以及生成图片、视频、配乐，需要帧比特 Mac App。</li>
+        <li>可以手动写脚本、整理画布、建 IP，也可以上传自己的图片、视频和音频。</li>
+        <li>项目和素材只存在你自己的浏览器里，别人看不到。想留着的话，到「设置 → 数据」导出备份。</li>
+      </ul>
+      <div class="modal-actions"><button value="cancel" class="btn primary">知道了</button></div>
+    </form>
+  </dialog>
+
+  <div id="webNarrow" class="web-narrow" role="dialog" aria-labelledby="webNarrowTitle">
+    <div class="web-narrow-card">
+      <b class="px" id="webNarrowTitle">帧比特是桌面工作台</b>
+      <p>画布、分镜表和侧栏需要比较宽的屏幕。建议在电脑上用浏览器打开，窗口宽度至少 1024 像素。</p>
+      <button type="button" class="btn line sm">仍然继续</button>
+    </div>
+  </div>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+  <script>window.FRAMEBIT_WEB_MODE = "static";</script>
+  <script src="web-prompts.js"></script>
+  <script src="web-shim.js"></script>
+  <script src="data.js"></script>
+  <script src="core.js"></script>
+  <script src="ui.js"></script>
+  <script src="fx.js"></script>
+  <script src="canvas.js"></script>
+  <script src="project.js"></script>
+  <script src="flow.js"></script>
+  <script src="ai.js"></script>
+  <script src="canvas-ai.js"></script>
+  <script src="cover.js"></script>
+  <script src="home.js"></script>
+  <script src="cursor.js"></script>
+  <script src="pet.js"></script>
+  <script src="bhvox.js"></script>
+  <script src="bithome.js"></script>
+  <script src="trash.js"></script>
+  <script src="remake.js"></script>
+  <script src="ip.js"></script>
+  <script src="team.js"></script>
+  <script src="tasks.js"></script>
+  <script src="undo.js"></script>
+  <script src="main.js"></script>
+  <script src="web.js"></script>
+</body>
+</html>

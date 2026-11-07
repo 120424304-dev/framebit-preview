@@ -1,0 +1,78 @@
+/* 帧比特 3.7 · 任务中心、提示队列、撤销重做、真实状态 */
+
+/* ---------- 提示队列 ---------- */
+.toasts { position: fixed; left: 50%; top: 62px; z-index: 985; transform: translateX(-50%); width: min(620px, calc(100vw - 40px)); display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+.tst { pointer-events: auto; display: flex; align-items: center; gap: 10px; max-width: 100%; min-height: 36px; padding: 8px 16px; border-radius: 18px; background: var(--inv-bg); color: var(--inv-fg); font-size: 13px; line-height: 1.45; box-shadow: 0 6px 24px rgba(0, 0, 0, .28); opacity: 0; transform: translateY(-8px); transition: opacity .2s, transform .28s var(--ease); }
+.tst.show { opacity: 1; transform: none; }
+.tst.err { background: var(--danger); color: #000; }
+.tst.sticky, .tst:has(.tst-a) { padding-right: 6px; }
+.tst-m { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.tst-n { flex: none; font-size: 11px; opacity: .6; }
+.tst-a { flex: none; padding: 3px 10px; border-radius: 999px; border: 1px solid currentColor; font-size: 12px; font-weight: 600; color: inherit; white-space: nowrap; }
+.tst-a:hover { background: color-mix(in srgb, currentColor 14%, transparent); }
+.tst-x { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; font-size: 16px; line-height: 1; color: inherit; opacity: .6; }
+.tst-x:hover { opacity: 1; background: color-mix(in srgb, currentColor 14%, transparent); }
+@media (prefers-reduced-motion: reduce) { .tst { transition: opacity .12s; transform: none; } }
+
+/* ---------- 顶栏：任务中心按钮、撤销重做 ---------- */
+.jq-btn { position: relative; }
+.jq-btn .pxi { width: 14px; height: 14px; }
+.jq-btn.busy .pxi { animation: jqRing 1.2s steps(4) infinite; transform-origin: 50% 10%; }
+@keyframes jqRing { 0%, 60%, 100% { transform: rotate(0); } 15% { transform: rotate(-14deg); } 35% { transform: rotate(14deg); } }
+.jq-n { position: absolute; top: 1px; right: -2px; min-width: 15px; height: 14px; padding: 0 3px; font-style: normal; font-size: 10px; line-height: 14px; text-align: center; background: #FFD23F; color: #111; clip-path: var(--pxc); }
+.jq-btn.has-err::after { content: ""; position: absolute; top: 3px; left: 4px; width: 6px; height: 6px; background: var(--danger); clip-path: var(--pxc); }
+.jq-btn.busy.has-err::after { left: 2px; }
+.undo-btns { display: inline-flex; gap: 0; }
+.undo-btns .btn .pxi { width: 13px; height: 13px; }
+.undo-btns .btn:disabled { opacity: .3; cursor: default; }
+
+/* ---------- 任务中心面板 ---------- */
+.jq { position: fixed; z-index: 930; max-height: min(560px, calc(100vh - 80px)); display: flex; flex-direction: column; background: var(--bg2); color: var(--text); border: 1px solid var(--line2); border-radius: 14px; box-shadow: 0 18px 50px rgba(0, 0, 0, .4); opacity: 0; transform: translateY(-6px); pointer-events: none; transition: opacity .16s, transform .22s var(--ease); }
+.jq.in { opacity: 1; transform: none; pointer-events: auto; }
+.jq-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 10px 8px 12px; border-bottom: 1px solid var(--line); }
+.jq-head .btn .pxi { width: 12px; height: 12px; }
+.jq-body { flex: 1; min-height: 0; overflow: auto; padding: 4px 0 8px; }
+.jq-sec { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px 4px; font-size: 11px; }
+.jq-clear { font-size: 11px; color: var(--muted); }
+.jq-clear:hover { color: var(--text); }
+.jq-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 8px 12px 8px 14px; }
+.jq-row + .jq-row { border-top: 1px solid var(--line); }
+.jq-ic { position: relative; display: grid; place-items: center; width: 28px; height: 28px; background: var(--bg3); clip-path: var(--pxc); color: var(--muted); }
+.jq-ic .pxi { width: 14px; height: 14px; }
+.jq-row.run .jq-ic { color: var(--text); }
+.jq-row.done .jq-ic { color: #3DD68C; }
+.jq-row.err .jq-ic { color: var(--danger); }
+.jq-row.cancel { opacity: .55; }
+.jq-spin { position: absolute; inset: 0; border: 2px solid transparent; border-top-color: #FFD23F; border-radius: 50%; animation: jqSpin 1s linear infinite; }
+.jq-main { min-width: 0; }
+.jq-t { display: flex; align-items: baseline; gap: 8px; min-width: 0; font-size: 13px; }
+.jq-t b { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jq-t span { flex: none; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+.jq-s { margin-top: 2px; font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jq-s b { font-weight: 400; color: var(--text); }
+.jq-s em { font-style: normal; }
+.jq-err { color: var(--danger); white-space: normal; }
+.jq-row.err .jq-s { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.jq-acts { display: flex; gap: 4px; }
+.jq-acts .btn { padding: 3px 8px; font-size: 12px; }
+.jq-empty { display: flex; flex-direction: column; gap: 6px; padding: 28px 22px; text-align: center; font-size: 12px; line-height: 1.6; }
+.jq-msg { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 8px; padding: 6px 14px; font-size: 12px; line-height: 1.5; }
+.jq-msg span:last-child { overflow-wrap: anywhere; }
+.jq-msg.err span:last-child { color: var(--danger); }
+.jq-foot { padding: 9px 14px 11px; border-top: 1px solid var(--line); font-size: 11px; line-height: 1.55; }
+@keyframes jqSpin { to { transform: rotate(360deg); } }
+
+/* ---------- 生成中：不再画估算的进度，只显示真实状态和等了多久 ---------- */
+.cn-prog.ind { overflow: hidden; position: relative; }
+.cn-prog.ind i { position: absolute; top: 1px; bottom: 1px; left: 0; width: 34%; transition: none; animation: cnInd 1.8s steps(18) infinite; }
+@keyframes cnInd { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
+.frame-st { position: absolute; left: 10px; right: 10px; bottom: 18px; display: flex; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--text); text-shadow: 0 1px 0 #000; }
+.frame-st b { font-weight: 400; }
+.frame-st em { font-style: normal; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .cn-prog.ind i { animation-duration: 4s; } }
+
+/* ---------- Bit 把你带到右侧面板 ---------- */
+.panel.bit-here { animation: bitHere 1.2s steps(6); }
+@keyframes bitHere { 0%, 40% { box-shadow: inset 3px 0 0 #FFD23F; } 100% { box-shadow: inset 0 0 0 transparent; } }
+
+:root[data-theme="light"] .tst.err, .theme-light .tst.err { color: #fff; }
